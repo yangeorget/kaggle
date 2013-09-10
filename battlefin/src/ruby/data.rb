@@ -1,62 +1,51 @@
 require 'csv'
 
-nbdays = 510
-traindays = 1..200
-testdays = 201..nbdays
-timestamps = 55
-securities = ARGV[0].to_i
-features = 244
+class DataGenerator
+  def initialize(securities, nbtraindays, nbtestdays)
+    @securities = securities
+    @nbtraindays = nbtraindays
+    @nbtestdays = nbtestdays
+    @timestamps = 55
+    @features = 244
+    @traindata = Array.new(@nbtraindays)
+    for day in 0..@nbtraindays-1
+      @traindata[day] = CSV.read("data/" + (1 + day).to_s + ".csv")
+    end
+    @testdata = Array.new(@nbtestdays)
+    for day in 0..@nbtestdays-1
+      @testdata[day] = CSV.read("data/" + (201 + day).to_s + ".csv")
+    end
+    @trainLabels = CSV.read("trainLabels.csv")
+  end
 
-data = Array.new(nbdays)
-for day in 1..nbdays
-  data[day-1] = CSV.read("data/" + day.to_s + ".csv")
-end
-trainLabels = CSV.read("trainLabels.csv")
+  def line(file, data, value, day, sec)
+    file.write(value)
+    file.write(" | ")
+    for ts in 1..@timestamps
+      file.write("o" + sec.to_s + "_" + ts.to_s)
+      file.write(":")
+      file.write(data[day][ts][sec-1])
+      file.write(" ")
+    end
+    file.write("day:")
+    file.write(day.to_s)
+    file.write("\n")
+  end
 
-for sec in 1..securities
-  File.open("target/o"+ sec.to_s + ".train", 'w') do |train|
-    for day in traindays
-      train.write(trainLabels[day][sec]) # indices are correct!
-      train.write(" | ")
-      for ts in 1..timestamps
-        train.write("o" + sec.to_s + "_" + ts.to_s)
-        train.write(":")
-        train.write(data[day-1][ts][sec-1])
-        train.write(" ")
+  def run
+    for sec in 1..@securities
+      File.open("target/o"+ sec.to_s + ".train", 'w') do |train|
+        for day in 0..@nbtraindays-1
+          line(train, @traindata, @trainLabels[day+1][sec], day, sec) # indices are correct!
+        end
       end
-      train.write("day:")
-      train.write(day.to_s)
-      train.write("\n")
+      File.open("target/o"+ sec.to_s + ".test", 'w') do |test|
+        for day in 0..@nbtestdays-1
+          line(test, @testdata, "0.0", day, sec)
+        end
+      end
     end
   end
-  File.open("target/o"+ sec.to_s + ".test", 'w') do |test|
-    for day in testdays
-      test.write("0.0 | ")
-      for ts in 1..timestamps
-        test.write("o" + sec.to_s + "_" + ts.to_s)
-        test.write(":")
-        test.write(data[day-1][ts][sec-1])
-        test.write(" ")
-      end
-      test.write("day:")
-      test.write(day.to_s)
-      test.write("\n")
-    end
-  end
 end
 
-
-def line(file, value, day, sec)
-  train.write(value)
-      train.write(" | ")
-      for ts in 1..timestamps
-        train.write("o" + sec.to_s + "_" + ts.to_s)
-        train.write(":")
-        train.write(data[day-1][ts][sec-1])
-        train.write(" ")
-      end
-      train.write("day:")
-      train.write(day.to_s)
-      train.write("\n")
-    end
-end
+DataGenerator.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2].to_i).run
