@@ -1,25 +1,18 @@
 require 'csv'
 
 class Prediction
-  def initialize(securities, nbtestdays, outfolder)
-    @securities = securities
+  def initialize(nbsecurities, nbtestdays, outfolder)
+    @nbsecurities = nbsecurities
     @nbtestdays = nbtestdays
     @outfolder = outfolder
   end
 
   def run
     CSV.open(@outfolder + "/submission.txt", 'w') do |prediction|
-      r = Array.new
-      r[0] = "FileId"
-      i = 1
-      for sec in 1..@securities
-        r[i] = "O" + sec.to_s
-        i = i +1
-      end
-      prediction << r
-      output = Array.new(@securities + 1)
+      prediction << ["FileId"] + (1..@nbsecurities).to_a.map{ |sec| "O" + sec.to_s}
+      output = Array.new(@nbsecurities + 1)
       output[0] = (201..200+@nbtestdays).to_a
-      for sec in 1..@securities
+      for sec in 1..@nbsecurities
         output[sec] = CSV.read(@outfolder + "/o" + sec.to_s + ".prediction").flatten
       end
       output = output.transpose
