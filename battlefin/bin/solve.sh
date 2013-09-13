@@ -9,7 +9,7 @@ loss=quantile
 
 rm target/*.*
 echo "computing data..."
-ruby src/ruby/model.rb $nbsecurities $nbtraindays $nbtestdays data target
+ruby src/ruby/datagenerator.rb $nbsecurities $nbtraindays $nbtestdays data target
 echo "data computed"
 for ((i=1; i<=$nbsecurities; i++)) do
    security=o$i

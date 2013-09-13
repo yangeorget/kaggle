@@ -23,4 +23,6 @@ class Prediction
   end
 end
 
-Prediction.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2]).run
+if __FILE__ == $PROGRAM_NAME
+  Prediction.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2]).run
+end

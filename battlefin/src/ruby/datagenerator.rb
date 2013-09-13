@@ -25,7 +25,7 @@ class DataGenerator
     @trainLabels = CSV.read(@infolder + "/" + "trainLabels.csv")
   end
 
-  def emit(file, key, value)
+  def self.emit(file, key, value)
       file.write(key)
       file.write(":")
       file.write(value.to_s)
@@ -61,4 +61,6 @@ class DataGenerator
   end
 end
 
-DataGenerator.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2].to_i, ARGV[3], ARGV[4]).run
+if __FILE__ == $PROGRAM_NAME
+  DataGenerator.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2].to_i, ARGV[3], ARGV[4]).run
+end
