@@ -1,6 +1,6 @@
 require 'csv'
 
-class DataGenerator
+class DataGenerator2
   def initialize(nbsecurities, nbtraindays, nbtestdays, infolder, outfolder)
     @nbsecurities = nbsecurities
     @nbtraindays = nbtraindays
@@ -23,6 +23,7 @@ class DataGenerator
     end
     puts "reading trainLabels"
     @trainLabels = CSV.read(@infolder + "/" + "trainLabels.csv")
+    puts "done reading data"
   end
 
   def self.emit(file, key, value)
@@ -35,24 +36,29 @@ class DataGenerator
   def line(file, data, value, day, sec)
     file.write(value)
     file.write(" | ")
-    for ts in @nbtimestamps..@nbtimestamps
-      DataGenerator.emit(file, "ts" + ts.to_s, data[day][ts][sec-1])
+    DataGenerator2.emit(file, "day", day)
+    DataGenerator2.emit(file, "sec", sec)
+    for ts in 1..@nbtimestamps
+      DataGenerator2.emit(file, "ts" + ts.to_s, data[day][ts][sec-1])
     end
-    #DataGenerator.emit(file, "day", day)
     for feat in 1..@nbfeatures
-      DataGenerator.emit(file, "I" + feat.to_s+ "_last", data[day][@nbtimestamps][@nbsecurities+feat-1])
+      DataGenerator2.emit(file, "I" + feat.to_s+ "_last", data[day][@nbtimestamps][@nbsecurities+feat-1])
     end
     file.write("\n")
   end
 
   def run
-    for sec in 1..@nbsecurities
-      File.open(@outfolder + "/o"+ sec.to_s + ".train", 'w') do |train|
+    puts "generating train.txt"
+    File.open(@outfolder + "/train.txt", 'w') do |train|
+      for sec in 1..@nbsecurities
         for day in 0..@nbtraindays-1
           line(train, @traindata, @trainLabels[day+1][sec], day, sec) # indices are correct!
         end
       end
-      File.open(@outfolder + "/o"+ sec.to_s + ".test", 'w') do |test|
+    end
+    puts "generating test.txt"
+    File.open(@outfolder + "/test.txt", 'w') do |test|
+      for sec in 1..@nbsecurities
         for day in 0..@nbtestdays-1
           line(test, @testdata, "0.0", day, sec)
         end
@@ -62,5 +68,5 @@ class DataGenerator
 end
 
 if __FILE__ == $PROGRAM_NAME
-  DataGenerator.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2].to_i, ARGV[3], ARGV[4]).run
+  DataGenerator2.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2].to_i, ARGV[3], ARGV[4]).run
 end

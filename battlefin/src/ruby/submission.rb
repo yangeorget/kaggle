@@ -1,6 +1,6 @@
 require 'csv'
 
-class Prediction
+class Submission
   def initialize(nbsecurities, nbtestdays, outfolder)
     @nbsecurities = nbsecurities
     @nbtestdays = nbtestdays
@@ -13,7 +13,7 @@ class Prediction
       output = Array.new(@nbsecurities + 1)
       output[0] = (201..200+@nbtestdays).to_a
       for sec in 1..@nbsecurities
-        output[sec] = CSV.read(@outfolder + "/o" + sec.to_s + ".prediction").flatten
+        output[sec] = CSV.read(@outfolder + "/o" + sec.to_s + ".test.prediction").flatten
       end
       output = output.transpose
       for row in output
@@ -24,5 +24,5 @@ class Prediction
 end
 
 if __FILE__ == $PROGRAM_NAME
-  Prediction.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2]).run
+  Submission.new(ARGV[0].to_i, ARGV[1].to_i, ARGV[2]).run
 end
